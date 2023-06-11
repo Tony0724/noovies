@@ -13,7 +13,11 @@ const Tab = createBottomTabNavigator();
 const Tabs = () => {
 	const isDark = useColorScheme() === 'dark';
 	return (
-		<Tab.Navigator screenOptions={{
+		<Tab.Navigator 
+		sceneContainerStyle={{
+			backgroundColor: isDark ? BLACK_COLOR : "white"
+		}}
+		screenOptions={{
 			headerTitleAlign: 'center', tabBarStyle: {
 				backgroundColor: isDark ? BLACK_COLOR : "white"
 			},
