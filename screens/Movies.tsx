@@ -2,7 +2,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import Swiper from 'react-native-swiper'
 import styled from 'styled-components/native';
-import {Dimensions, ActivityIndicator, StyleSheet} from 'react-native';
+import {Dimensions, ActivityIndicator, StyleSheet, useColorScheme} from 'react-native';
 import { makeImgPath } from '../utils';
 import {BlurView} from "@react-native-community/blur"
 
@@ -21,13 +21,41 @@ const Loader = styled.View`
 
 const BgImg = styled.Image``
 
+const Poster = styled.Image`
+	width: 100px;
+	height: 160px;
+	border-radius: 5px;
+`
+
 const Title = styled.Text`
-	
+	font-size: 16px;
+	font-weight: 600;
+	color: white;
+`
+const Wrapper = styled.View`
+	flex-direction: row;
+	height: 100%;
+	justify-content: center;
+	align-items: center;
+`
+const Column = styled.View`
+	width: 40%;
+	margin-left: 15px;
+`
+
+const Overview = styled.Text`
+	margin-top: 10px;
+	color: rgba(255,255, 255, 0.6);
+`
+
+const Votes = styled(Overview)`
+	font-size: 12px;
 `
 
 const {height: SCREEN_HEIGHT} = Dimensions.get("window")
 
 const Movies: React.FC<NativeStackScreenProps<any, "Movies">>= () => {
+	const isDark = useColorScheme() === 'dark';
 	const [loading, setLoading] = useState(true)
 	const [nowPlaying, setNowPlaying] = useState([])
 	const getNowPlaying = async() => {
@@ -48,11 +76,20 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">>= () => {
 	</Loader>
 	 :(
 		<Container>
-			<Swiper loop timeout={3.5} controlsEnabled={false} containerStyle={{width: '100%', height: SCREEN_HEIGHT / 4}}>
+			<Swiper horizontal loop autoplay autoplayTimeout={3.5} showsButtons={false} showsPagination={false} containerStyle={{width: '100%', height: SCREEN_HEIGHT / 4}}>
 				{nowPlaying.map(movie => <View key={movie.id}>
 					<BgImg style={StyleSheet.absoluteFill} source={{uri: makeImgPath(movie.backdrop_path)}} />
-					<BlurView intensity={80} style={StyleSheet.absoluteFill}>
-						<Title>{movie.original_title}</Title>
+					<BlurView blurType={isDark ? 'dark' : 'light'} intensity={80} style={StyleSheet.absoluteFill}>
+						<Wrapper>
+							<Poster source={{uri: makeImgPath(movie.poster_path)}}></Poster>
+							<Column>
+								<Title>{movie.original_title}</Title>
+								{movie.vote_average > 0 ? (
+								<Votes isDark={isDark}>⭐️ {movie.vote_average}/10</Votes>
+								) : null}			
+								<Overview>{movie.overview.slice(0, 65)}...</Overview>
+							</Column>
+						</Wrapper>
 					</BlurView>
 				</View>)}
 			</Swiper>
