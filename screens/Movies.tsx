@@ -6,7 +6,7 @@ import {Dimensions, ActivityIndicator, RefreshControl, FlatList, View} from 'rea
 import Slide from "../components/Slide"
 import VMedia from '../components/VMedia';
 import HMedia from '../components/HMedia';
-import {useQuery} from 'react-query'
+import {useQuery, useQueryClient} from 'react-query'
 import { moviesApi } from '../api';
 
 const Loader = styled.View`
@@ -44,11 +44,13 @@ const HSeperator = styled.View`
 `
 
 const Movies: React.FC<NativeStackScreenProps<any, "Movies">>= () => {
-	const [refreshing, setRefreshing] = useState(false);
-	const {isLoading: nowPlayingLoading, data: nowPlayingData} = useQuery("nowPlaying", moviesApi.nowPlaying)
-	const {isLoading: upcomingLoading, data: upcomingData} = useQuery("upcoming", moviesApi.UpComing)
-	const {isLoading: trendingLoading, data: trendingData} = useQuery("trending", moviesApi.Trending)
-	const onRefresh = async() => {}
+	const queryClient = useQueryClient()
+	const {isLoading: nowPlayingLoading, data: nowPlayingData, isRefetching: isRefetchingNowPlaying} = useQuery(["movies", "nowPlaying"], moviesApi.nowPlaying)
+	const {isLoading: upcomingLoading, data: upcomingData, isRefetching: isRefetchingUpcoming} = useQuery(["movies", "upcoming"], moviesApi.UpComing)
+	const {isLoading: trendingLoading, data: trendingData, isRefetching: isRefetchingTrending} = useQuery(["movies", "trending"], moviesApi.Trending)
+	const onRefresh = async() => {
+		queryClient.refetchQueries(["movies"])
+	}
 	const renderVMedia = ({item}) => (
 		<VMedia
       posterPath={item.poster_path}
@@ -65,7 +67,8 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">>= () => {
     />
 	)
 	const movieKeyExtractor = (item) => item.id + "";
-	const loading = nowPlayingLoading || upcomingLoading || trendingLoading
+	const loading = nowPlayingLoading || upcomingLoading || trendingLoading;
+	const refreshing = isRefetchingNowPlaying || isRefetchingUpcoming || isRefetchingTrending
 	return loading ? 
 	<Loader>
 		<ActivityIndicator  />
