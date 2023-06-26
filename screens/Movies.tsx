@@ -8,11 +8,7 @@ import VMedia from '../components/VMedia';
 import HMedia from '../components/HMedia';
 import {useQuery, useQueryClient} from 'react-query'
 import { MovieResponse, moviesApi } from '../api';
-
-const Loader = styled.View`
-	flex: 1;
-	justify-content: center;
-`
+import Loader from '../components/Loader';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get("window")
 
@@ -46,17 +42,15 @@ const HSeperator = styled.View`
 const Movies: React.FC<NativeStackScreenProps<any, "Movies">>= () => {
 	const queryClient = useQueryClient()
 	const {isLoading: nowPlayingLoading, data: nowPlayingData, isRefetching: isRefetchingNowPlaying} = useQuery<MovieResponse>(["movies", "nowPlaying"], moviesApi.nowPlaying)
-	const {isLoading: upcomingLoading, data: upcomingData, isRefetching: isRefetchingUpcoming} = useQuery<MovieResponse>(["movies", "upcoming"], moviesApi.UpComing)
-	const {isLoading: trendingLoading, data: trendingData, isRefetching: isRefetchingTrending} = useQuery<MovieResponse>(["movies", "trending"], moviesApi.Trending)
+	const {isLoading: upcomingLoading, data: upcomingData, isRefetching: isRefetchingUpcoming} = useQuery<MovieResponse>(["movies", "upcoming"], moviesApi.upcoming)
+	const {isLoading: trendingLoading, data: trendingData, isRefetching: isRefetchingTrending} = useQuery<MovieResponse>(["movies", "trending"], moviesApi.trending)
 	const onRefresh = async() => {
 		queryClient.refetchQueries(["movies"])
 	}
 	const loading = nowPlayingLoading || upcomingLoading || trendingLoading;
 	const refreshing = isRefetchingNowPlaying || isRefetchingUpcoming || isRefetchingTrending
 	return loading ? 
-	<Loader>
-		<ActivityIndicator  />
-	</Loader>
+		<Loader />
 	 : ( upcomingData ? <FlatList
 				onRefresh={onRefresh}
 				refreshing={refreshing} 
