@@ -2,13 +2,14 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import Swiper from 'react-native-swiper'
 import styled from 'styled-components/native';
-import {Dimensions, ActivityIndicator, RefreshControl, FlatList, View} from 'react-native';
+import {Dimensions, ActivityIndicator, RefreshControl, FlatList, View, useColorScheme} from 'react-native';
 import Slide from "../components/Slide"
 import VMedia from '../components/VMedia';
 import HMedia from '../components/HMedia';
 import {useQuery, useQueryClient} from 'react-query'
 import { MovieResponse, moviesApi } from '../api';
 import Loader from '../components/Loader';
+import HList from '../components/HList';
 
 const {height: SCREEN_HEIGHT} = Dimensions.get("window")
 
@@ -40,6 +41,7 @@ const HSeperator = styled.View`
 `
 
 const Movies: React.FC<NativeStackScreenProps<any, "Movies">>= () => {
+	const isDark = useColorScheme() === 'dark';
 	const queryClient = useQueryClient()
 	const {isLoading: nowPlayingLoading, data: nowPlayingData, isRefetching: isRefetchingNowPlaying} = useQuery<MovieResponse>(["movies", "nowPlaying"], moviesApi.nowPlaying)
 	const {isLoading: upcomingLoading, data: upcomingData, isRefetching: isRefetchingUpcoming} = useQuery<MovieResponse>(["movies", "upcoming"], moviesApi.upcoming)
@@ -66,25 +68,8 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">>= () => {
 						overview={movie.overview}
 					/>)}
 				</Swiper>
-				<ListContainer>
-					<ListTitle>Trending Movies</ListTitle>
-					{trendingData ? <TrendingScroll
-						data={trendingData.results}
-						contentContainerStyle={{paddingHorizontal: 20}}
-						horizontal 
-						showsHorizontalScrollIndicator={false}
-						ItemSeparatorComponent={VSeperator}
-						keyExtractor={(item) => item.id + ""}
-						renderItem={({item}) => (
-							<VMedia
-						  posterPath={item.poster_path}
-						  originalTitle={item.original_title}
-						  voteAverage={item.vote_average}
-						/>
-						)}
-					/>: null}
-					</ListContainer>
-					<ComingSoonTitle>Coming soon</ComingSoonTitle>
+				{trendingData ? <HList title="Trending Movies" data={trendingData.results} /> : null}
+				<ComingSoonTitle style={{color: isDark ? "white" : "black"}}>Coming soon</ComingSoonTitle>
 				</>}
 				data={upcomingData?.results}
 				keyExtractor={(item) => item.id + ""}

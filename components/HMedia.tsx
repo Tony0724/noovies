@@ -2,6 +2,7 @@ import React from 'react';
 import styled from 'styled-components/native';
 import Poster from './Poster';
 import Votes from './Votes';
+import { useColorScheme } from 'react-native';
 
 const HMovie = styled.View`
   padding: 0px 30px;
@@ -14,13 +15,11 @@ const HColumn = styled.View`
 `;
 
 const Overview = styled.Text`
-  color: white;
   opacity: 0.8;
   width: 80%;
 `;
 
 const Release = styled.Text`
-  color: white;
   font-size: 12px;
   margin-vertical: 10px;
   font-weight: 500;
@@ -28,7 +27,6 @@ const Release = styled.Text`
 `;
 
 const Title = styled.Text`
-  color: white;
   font-weight: 600;
   margin-top: 7px;
 `;
@@ -48,17 +46,18 @@ const HMedia: React.FC<HMediaProps> = ({
   releaseDate,
   voteAverage,
 }) => {
+  const isDark = useColorScheme() === 'dark';
   return (
     <HMovie>
       <Poster path={posterPath} />
       <HColumn>
-        <Title>
+        <Title style={{color: isDark ? "white" : "black"}}>
           {originalTitle.length > 30
             ? `${originalTitle.slice(0, 30)}...`
             : originalTitle}
         </Title>
         {releaseDate ? (
-          <Release>
+          <Release style={{color: isDark ? "white" : "black"}}>
             {new Date(releaseDate).toLocaleDateString("ko", {
               month: "long",
               day: "numeric",
@@ -67,7 +66,7 @@ const HMedia: React.FC<HMediaProps> = ({
           </Release>
         ) : null}
         {voteAverage ? <Votes votes={voteAverage} /> : null}
-        <Overview>
+        <Overview style={{color: isDark ? "white" : "black"}}>
           {overview !== "" && overview.length > 140
             ? `${overview.slice(0, 140)}...`
             : overview}

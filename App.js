@@ -7,7 +7,8 @@ import { NavigationContainer } from "@react-navigation/native";
 import Root from './navigation/Root';
 import { darkTheme, lightTheme } from './styled';
 import { ThemeProvider } from 'styled-components/native'
-import { QueryClient, QueryClientProvider} from 'react-query'
+import { QueryClient, QueryClientProvider} from 'react-query';
+import 'react-native-gesture-handler';
 
 const queryClient = new QueryClient();
 
