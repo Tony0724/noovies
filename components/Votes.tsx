@@ -6,14 +6,14 @@ interface VotesProps {
     votes: number;
 }
 
-const Text = styled.Text`
-    color: {isDark ? rgba(255, 255, 255, 0.8) : "black"}
-	font-size:10px;
-`;
 
 
 const Votes:React.FC<VotesProps> = ({votes}) => {
     const isDark = useColorScheme() === 'dark';
+    const Text = styled.Text`
+        color: ${isDark ? "#ffffffcc" : "black"};
+        font-size: 10px;
+    `;
     return (
         <Text>{votes > 0 ? `⭐️ ${votes}/10`: "Coming soon"}</Text>
     )

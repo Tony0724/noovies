@@ -8,11 +8,6 @@ const Movie = styled.View`
   align-items: center;
 `;
 
-const Title = styled.Text`
-  font-weight: 600;
-  margin-top: 7px;
-  margin-bottom: 5px;
-`;
 
 interface VMediaProps {
   posterPath: string;
@@ -26,10 +21,16 @@ const VMedia: React.FC<VMediaProps> = ({
   voteAverage,
 }) => {
   const isDark = useColorScheme() === 'dark';
+  const Title = styled.Text`
+    color: ${isDark ? "white" : "black"};
+    font-weight: 600;
+    margin-top: 7px;
+    margin-bottom: 5px;
+  `;
   return (
     <Movie>
       <Poster path={posterPath} />
-      <Title style={{color: isDark ? "white" : "black"}}>
+      <Title>
         {originalTitle.slice(0, 12)}
         {originalTitle.length > 12 ? "..." : null}
       </Title>

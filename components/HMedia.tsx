@@ -14,22 +14,6 @@ const HColumn = styled.View`
   width: 80%;
 `;
 
-const Overview = styled.Text`
-  opacity: 0.8;
-  width: 80%;
-`;
-
-const Release = styled.Text`
-  font-size: 12px;
-  margin-vertical: 10px;
-  font-weight: 500;
-  opacity: 0.6;
-`;
-
-const Title = styled.Text`
-  font-weight: 600;
-  margin-top: 7px;
-`;
 
 interface HMediaProps {
   posterPath: string;
@@ -47,17 +31,34 @@ const HMedia: React.FC<HMediaProps> = ({
   voteAverage,
 }) => {
   const isDark = useColorScheme() === 'dark';
+  const Title = styled.Text`
+    color: ${isDark ? "white" : "black"};
+    font-weight: 600;
+    margin-top: 7px;
+  `;
+  const Release = styled.Text`
+    color: ${isDark ? "white" : "black"};
+    font-size: 12px;
+    margin-vertical: 10px;
+    font-weight: 500;
+    opacity: 0.6;
+  `;
+  const Overview = styled.Text`
+    color: ${isDark ? "white" : "black"};
+    opacity: 0.8;
+    width: 80%;
+  `;
   return (
     <HMovie>
       <Poster path={posterPath} />
       <HColumn>
-        <Title style={{color: isDark ? "white" : "black"}}>
+        <Title>
           {originalTitle.length > 30
             ? `${originalTitle.slice(0, 30)}...`
             : originalTitle}
         </Title>
         {releaseDate ? (
-          <Release style={{color: isDark ? "white" : "black"}}>
+          <Release>
             {new Date(releaseDate).toLocaleDateString("ko", {
               month: "long",
               day: "numeric",
@@ -66,7 +67,7 @@ const HMedia: React.FC<HMediaProps> = ({
           </Release>
         ) : null}
         {voteAverage ? <Votes votes={voteAverage} /> : null}
-        <Overview style={{color: isDark ? "white" : "black"}}>
+        <Overview>
           {overview !== "" && overview.length > 140
             ? `${overview.slice(0, 140)}...`
             : overview}
