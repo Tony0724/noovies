@@ -3,6 +3,8 @@ import styled from "styled-components/native";
 import Poster from "./Poster";
 import Votes from "./Votes";
 import { useColorScheme } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { TouchableOpacity } from 'react-native';
 
 const Movie = styled.View`
   align-items: center;
@@ -27,15 +29,21 @@ const VMedia: React.FC<VMediaProps> = ({
     margin-top: 7px;
     margin-bottom: 5px;
   `;
+  const navigation = useNavigation();
+  const goToDetail = () => {
+    navigation.navigate("Stack", {screen: "Detail"})
+  }
   return (
-    <Movie>
-      <Poster path={posterPath} />
-      <Title>
-        {originalTitle.slice(0, 12)}
-        {originalTitle.length > 12 ? "..." : null}
-      </Title>
-      <Votes votes={voteAverage} />
-    </Movie>
+    <TouchableOpacity onPress={goToDetail}>
+      <Movie>
+        <Poster path={posterPath} />
+        <Title>
+          {originalTitle.slice(0, 12)}
+          {originalTitle.length > 12 ? "..." : null}
+        </Title>
+        <Votes votes={voteAverage} />
+      </Movie>
+    </TouchableOpacity>
   )
 };
 

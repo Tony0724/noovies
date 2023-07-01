@@ -3,6 +3,8 @@ import styled from 'styled-components/native';
 import Poster from './Poster';
 import Votes from './Votes';
 import { useColorScheme } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { TouchableOpacity } from 'react-native';
 
 const HMovie = styled.View`
   padding: 0px 30px;
@@ -48,8 +50,13 @@ const HMedia: React.FC<HMediaProps> = ({
     opacity: 0.8;
     width: 80%;
   `;
+  const navigation = useNavigation();
+  const goToDetail = () => {
+    navigation.navigate("Stack", {screen: "Detail"})
+  }
   return (
-    <HMovie>
+    <TouchableOpacity onPress={goToDetail}>
+      <HMovie>
       <Poster path={posterPath} />
       <HColumn>
         <Title>
@@ -73,7 +80,8 @@ const HMedia: React.FC<HMediaProps> = ({
             : overview}
         </Overview>
       </HColumn>
-    </HMovie>
+     </HMovie>
+    </TouchableOpacity>
   );
 };
 
