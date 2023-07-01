@@ -30,7 +30,6 @@ const Search = () => {
 		searchMovies();
 		searchTv();
 	}
-	// console.log(moviesData?.results.length)
 	return (
 		<Container>
 			<SearchBar

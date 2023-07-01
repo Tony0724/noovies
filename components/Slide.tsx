@@ -35,19 +35,26 @@ const Votes = styled(Overview)`
 	font-size: 12px;
 `
 
-interface SlidePrpos {
+interface SlideProps {
     backdrop_path: string 
     poster_path: string 
     original_title: string 
     vote_average: number 
-    overvie: string
+    overview: string
 }
 
-const Slide:React.Fc<SlideProps> = ({backdrop_path, poster_path, original_title, vote_average, overview}) => {
+const Slide:React.FC<SlideProps> = ({backdrop_path, poster_path, original_title, vote_average, overview}) => {
     const isDark = useColorScheme() === 'dark';
+	const originalTitle = original_title;
 	const navigation = useNavigation();
 	const goToDetail = () => {
-		navigation.navigate("Stack", {screen: "Detail"})
+		//@ts-ignore
+		navigation.navigate("Stack", {
+			screen: "Detail", 
+			params: {
+				originalTitle,
+		  	}
+		})
 	}
     return (
 		<TouchableWithoutFeedback onPress={goToDetail}>
@@ -57,7 +64,7 @@ const Slide:React.Fc<SlideProps> = ({backdrop_path, poster_path, original_title,
 					<Wrapper>
 						<Poster path={poster_path} />
 						<Column>
-							<Title isDark={isDark}>{original_title}</Title>
+							<Title isDark={isDark}>{originalTitle}</Title>
 							{vote_average > 0 ? (
 							<Votes isDark={isDark}>⭐️ {vote_average}/10</Votes>
 							) : null}			
