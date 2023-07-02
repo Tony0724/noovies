@@ -13,9 +13,7 @@ const Stack = () => {
       headerStyle: {
         backgroundColor: isDark ? BLACK_COLOR : "white"
       },
-      headerTitleStyle: {
-				color:  isDark ? 'white' : BLACK_COLOR,
-			}
+      headerTintColor: isDark ? 'white' : "black",
       }}>
       <NativeStack.Screen name="Detail" component={Detail}></NativeStack.Screen>
     </NativeStack.Navigator>

@@ -68,6 +68,7 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">>= () => {
 						original_title={movie.original_title } 
 						vote_average={movie.vote_average } 
 						overview={movie.overview}
+						fullData={movie}
 					/>)}
 				</Swiper>
 				{trendingData ? <HList title="Trending Movies" data={trendingData.results} /> : null}
@@ -82,6 +83,7 @@ const Movies: React.FC<NativeStackScreenProps<any, "Movies">>= () => {
 				  originalTitle={item.original_title}
 				  overview={item.overview}
 				  releaseDate={item.release_date}
+				  fullData={item}
 				/>
 				)}
 			/> : null

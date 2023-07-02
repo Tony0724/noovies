@@ -36,7 +36,8 @@ const HList: React.FC<HListProps> = ({ title, data }) => {
                 ItemSeparatorComponent={HListSeperator}
                 keyExtractor={(item) => item.id + ""}
                 data={data}
-                renderItem={({item}) => <VMedia posterPath={item.poster_path} originalTitle={item.original_title ?? item.original_name} voteAverage={item.vote_average} />}
+                renderItem={({item}) => <VMedia posterPath={item.poster_path} originalTitle={item.original_title ?? item.original_name} voteAverage={item.vote_average} fullData={item}
+                />}
             />
         </ListContainer>
     )
