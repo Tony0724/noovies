@@ -1,11 +1,16 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components/native';
-import { Movie, TV } from '../api';
+import { Movie, TV, moviesApi, tvApi } from '../api';
 import Poster from '../components/Poster';
-import {Dimensions, StyleSheet} from 'react-native';
+import {Dimensions, StyleSheet, Linking} from 'react-native';
 import { makeImgPath } from '../utils';
 import {LinearGradient} from 'expo-linear-gradient'
 import { BLACK_COLOR } from '../colors';
+import { useQuery } from 'react-query';
+import Loader from '../components/Loader';
+import {Ionicons} from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
+import { Platform } from 'react-native';
 
 const Container = styled.ScrollView`
     background-color: ${props => props.theme.mainBgColor};
@@ -32,13 +37,28 @@ const Title = styled.Text`
     font-weight: 500;
 `;
 
+const Data = styled.View`
+    padding: 0px 20px;
+`;
+
 const Overview = styled.Text`
     color: ${props => props.theme.textColor};
-    margin-top: 20px;
+    margin: 20px 0px;
     padding: 0px 20px;
 `;
 
 const Background = styled.Image``;
+
+const VideoBtn = styled.TouchableOpacity`
+    flex-direction: row;
+`;
+const BtnText = styled.Text`
+    color: white;
+    font-weight: 600;
+    margin-bottom: 10px;
+    line-height: 24px;
+    margin-left: 10px;
+`;
 
 type RootStackParamList = {
     Detail: Movie | TV
@@ -47,11 +67,23 @@ type RootStackParamList = {
 type DetailScreenProps = NativeStackScreenProps<RootStackParamList, "Detail">;
 
 const Detail: React.FC<DetailScreenProps> = ({navigation: {setOptions}, route:{params}}) => {
+    const isMovie = 'original_title' in params;
+    const {isLoading, data} = useQuery([isMovie ? "movies" : "tv", params.id], isMovie ? moviesApi.detail : tvApi.detail)
     useEffect(() => {
         setOptions({
             title: 'original_title' in params ? 'Movie' : 'TV Show'
         })
     }, [])
+    const openYTLink = async(videoID: string) => {
+        const BaseUrl = `http://m.youtube.com/watch?v=${videoID}`;
+        // await Linking.openURL(BaseUrl)
+        let browserPackage: string | undefined;
+        if (Platform.OS === "android") {
+        const tabsSupportingBrowsers = await WebBrowser.getCustomTabsSupportingBrowsersAsync();
+            browserPackage = tabsSupportingBrowsers?.defaultBrowserPackage;
+        }
+        await WebBrowser.openBrowserAsync(BaseUrl, { browserPackage });
+    }
     return (
         <Container>
             <Header>
@@ -68,7 +100,14 @@ const Detail: React.FC<DetailScreenProps> = ({navigation: {setOptions}, route:{p
                     <Title>{'original_title' in params ? params.original_title : params.original_name}</Title>
                 </Column>
             </Header>
-            <Overview>{params.overview}</Overview>
+            <Data>
+                <Overview>{params.overview}</Overview>
+                {isLoading ? <Loader /> : null}
+                {data?.videos?.results?.map(video => <VideoBtn key={video.key} onPress={() => openYTLink(video.key)}>
+                    <Ionicons name='logo-youtube' color='white' size={24} />
+                    <BtnText>{video.name}</BtnText>
+                </VideoBtn>)}
+            </Data>
         </Container>
     )
 }
