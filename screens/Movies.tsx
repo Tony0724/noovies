@@ -1,93 +1,140 @@
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
-import Swiper from 'react-native-swiper'
-import styled from 'styled-components/native';
-import {Dimensions, ActivityIndicator, RefreshControl, FlatList, View, useColorScheme} from 'react-native';
-import Slide from "../components/Slide"
-import VMedia from '../components/VMedia';
-import HMedia from '../components/HMedia';
-import {useQuery, useQueryClient} from 'react-query'
-import { MovieResponse, moviesApi } from '../api';
-import Loader from '../components/Loader';
-import HList from '../components/HList';
+import React, {useState} from "react";
+import styled from "styled-components/native";
+import {Alert, Dimensions, FlatList, useColorScheme} from "react-native";
+import {NativeStackScreenProps} from "@react-navigation/native-stack";
+import Swiper from 'react-native-swiper';
+import {useInfiniteQuery, useIsFetching, useQuery, useQueryClient} from 'react-query'
+import Slide from "../components/Slide";
+import HMedia from "../components/HMedia";
+import {MovieResponse, Movie, moviesAPI} from "../api";
+import Loader from "../components/Loader";
+import HList from "../components/HList";
+import {fetchMore, getNextPage, renderFooterComponent} from "../utils";
 
-const {height: SCREEN_HEIGHT} = Dimensions.get("window")
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
-const ListTitle = styled.Text`
-	color:white;
-	font-size: 18px;
-	font-weight: 600;
-	margin-left:30px;
-`
+const HSeparater = styled.View`
+    height: 20px;
+`;
 
-const TrendingScroll = styled.FlatList`
-	margin-top: 20px;
-`
+const Movies: React.FC<NativeStackScreenProps<any, "Movies">> = () => {
+    const isDark = useColorScheme() === 'dark';
+    const ListTitle = styled.Text`
+        color: ${isDark ? "white" : "black"};
+        font-size: 18px;
+        font-weight: 600;
+        margin-left: 30px;
+        margin-bottom: 20px;
+    `;
 
-const ListContainer = styled.View`
-	margin-bottom: 40px;
-`
+    const ComingSoonTitle = styled(ListTitle)`
+        margin-bottom: 20px;
+    `;
 
-const ComingSoonTitle = styled(ListTitle)`
-	margin-bottom: 20px;
-`
-
-const VSeperator = styled.View`
-	width: 20px;
-`
-
-const HSeperator = styled.View`
-	height: 20px;
-`
-
-const Movies: React.FC<NativeStackScreenProps<any, "Movies">>= () => {
-	const isDark = useColorScheme() === 'dark';
-	const [refreshing, setRefreshing] = useState(false);
-	const queryClient = useQueryClient()
-	const {isLoading: nowPlayingLoading, data: nowPlayingData } = useQuery<MovieResponse>(["movies", "nowPlaying"], moviesApi.nowPlaying)
-	const {isLoading: upcomingLoading, data: upcomingData } = useQuery<MovieResponse>(["movies", "upcoming"], moviesApi.upcoming)
-	const {isLoading: trendingLoading, data: trendingData } = useQuery<MovieResponse>(["movies", "trending"], moviesApi.trending)
-	const onRefresh = async() => {
-		setRefreshing(true);
-		await queryClient.refetchQueries(["movies"])
-		setRefreshing(false);
-	}
-	const loading = nowPlayingLoading || upcomingLoading || trendingLoading;
-	return loading ? 
-		<Loader />
-	 : ( upcomingData ? <FlatList
-				onRefresh={onRefresh}
-				refreshing={refreshing} 
-				ListHeaderComponent={
-					<>
-					<Swiper horizontal loop autoplay autoplayTimeout={3.5} showsButtons={false} showsPagination={false} containerStyle={{width: '100%', height: SCREEN_HEIGHT / 3}} style={{marginBottom: 30}}>
-					{nowPlayingData?.results.map(movie => <Slide 
-						key={movie.id} 
-						backdrop_path={movie.backdrop_path || "" }
-						poster_path={movie.poster_path || "" } 
-						original_title={movie.original_title } 
-						vote_average={movie.vote_average } 
-						overview={movie.overview}
-						fullData={movie}
-					/>)}
-				</Swiper>
-				{trendingData ? <HList title="Trending Movies" data={trendingData.results} /> : null}
-				<ComingSoonTitle style={{color: isDark ? "white" : "black"}}>Coming soon</ComingSoonTitle>
-				</>}
-				data={upcomingData?.results}
-				keyExtractor={(item) => item.id + ""}
-				ItemSeparatorComponent={HSeperator}
-				renderItem={({item}) => (
-					<HMedia
-				  posterPath={item.poster_path}
-				  originalTitle={item.original_title}
-				  overview={item.overview}
-				  releaseDate={item.release_date}
-				  fullData={item}
-				/>
-				)}
-			/> : null
-	 	)
-}
+    const queryClient = useQueryClient();
+    const [refreshing, setRefreshing] = useState(false);
+    const {isLoading: nowPlayingLoading,
+        data: nowPlayingData,
+    } = useQuery<MovieResponse>(
+        ['movies','nowPlaying'],
+        moviesAPI.nowPlaying
+    );
+    const {isLoading: upcomingLoading,
+        data: upcomingData,
+        isFetchingNextPage: upcomingFetchingNextPage,
+        hasNextPage: upcomingHasNext,
+        fetchNextPage: upcomingFetchNext,
+    } = useInfiniteQuery(
+        ['movies', 'upcoming'],
+        moviesAPI.upcoming, {
+            keepPreviousData: true,
+            getNextPageParam: getNextPage,
+        }
+    );
+    const {
+        isLoading: trendingLoading,
+        data: trendingData,
+        isFetchingNextPage: trendingFetchingNextPage,
+        hasNextPage: trendingHasNext,
+        fetchNextPage: trendingFetchNext,
+    } = useInfiniteQuery(
+        ['movies', 'trending'],
+        moviesAPI.trending, {
+            keepPreviousData: true,
+            getNextPageParam: getNextPage,
+        }
+    );
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await queryClient.refetchQueries(['movies'])
+        setRefreshing(false);
+    };
+    const movieKeyExtractor = (item: Movie) => item.id + ""
+    const loading = nowPlayingLoading || upcomingLoading || trendingLoading
+    return loading ? (
+        <Loader/>
+    ) : upcomingData ? (
+        <FlatList
+            onEndReached={() => fetchMore(upcomingHasNext, upcomingFetchNext)}
+            onEndReachedThreshold={0.3}
+            onRefresh={onRefresh}
+            refreshing={refreshing}
+            ListHeaderComponent={
+                <>
+                    <Swiper
+                        horizontal
+                        loop
+                        autoplay
+                        autoplayTimeout={3.5}
+                        showsButtons={false}
+                        showsPagination={false}
+                        containerStyle={{
+                            marginBottom: 40,
+                            width: "100%",
+                            height: SCREEN_HEIGHT / 4,
+                        }}
+                    >
+                        {nowPlayingData?.results.map((movie) => (
+                            <Slide
+                                key={movie.id}
+                                backdropPath={movie.backdrop_path || ""}
+                                posterPath={movie.poster_path || ""}
+                                originalTitle={movie.original_title}
+                                voteAverage={movie.vote_average}
+                                overview={movie.overview}
+                                fullData={movie}
+                            />
+                        ))}
+                    </Swiper>
+                        {trendingData ? (
+                            <HList
+                                title="Trending Movies"
+                                data={trendingData.pages.map((page) => page.results).flat()}
+                                hasNext={trendingHasNext}
+                                fetchNext={trendingFetchNext}
+                                isFetchingNextPage={trendingFetchingNextPage}
+                            />
+                        ) : null}
+                    <ComingSoonTitle>Coming soon</ComingSoonTitle>
+                </>
+            }
+            ListFooterComponent={
+                renderFooterComponent(upcomingFetchingNextPage)
+            }
+            data={upcomingData.pages.map((page) => page.results).flat()}
+            keyExtractor={ (item, index) => item.id + index.toString()  }
+            ItemSeparatorComponent={ HSeparater }
+            renderItem={({ item }) => (
+                <HMedia
+                posterPath={item.poster_path || ""}
+                originalTitle={item.original_title}
+                overview={item.overview}
+                releaseDate={item.release_date}
+                fullData={item}
+                />
+            )}
+        />
+    ) : null;
+};
 
 export default Movies;

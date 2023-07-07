@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import styled from 'styled-components/native';
-import { Movie, TV, moviesApi, tvApi } from '../api';
+import { Movie, TV, moviesAPI, tvAPI } from '../api';
 import Poster from '../components/Poster';
 import {Dimensions, StyleSheet, Share, useColorScheme, TouchableOpacity, Platform} from 'react-native';
 import { makeImgPath } from '../utils';
@@ -61,7 +61,7 @@ type DetailScreenProps = NativeStackScreenProps<RootStackParamList, "Detail">;
 const Detail: React.FC<DetailScreenProps> = ({navigation: {setOptions}, route:{params}}) => {
     const isMovie = 'original_title' in params;
     const isAndroid = Platform.OS === 'android'
-    const {isLoading, data} = useQuery([isMovie ? "movies" : "tv", params.id], isMovie ? moviesApi.detail : tvApi.detail)
+    const {isLoading, data} = useQuery([isMovie ? "movies" : "tv", params.id], isMovie ? moviesAPI.detail : tvAPI.detail)
     const shareMedia = async() => {
         const homepage = isMovie ? `https://www.imdb.com/title/${data?.imdb_id}/` : data?.homepage;
         if(isAndroid) {
@@ -74,12 +74,12 @@ const Detail: React.FC<DetailScreenProps> = ({navigation: {setOptions}, route:{p
             })
         }
     }
+    const isDark = useColorScheme() === 'dark';
     const ShareButton = () => (
         <TouchableOpacity onPress={shareMedia}>
             <Ionicons name='share-outline' color={isDark ? "white" : "black"} size={24} />
         </TouchableOpacity>
     )
-    const isDark = useColorScheme() === 'dark';
     const BtnText = styled.Text`
         color: ${isDark ? "white" : "black"};
         font-weight: 600;

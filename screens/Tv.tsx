@@ -1,38 +1,89 @@
-import React, {useState} from 'react';
-import {View, Text} from 'react-native';
-import { useQuery, useQueryClient } from 'react-query';
-import { tvApi } from '../api';
-import Loader from '../components/Loader';
-import {ScrollView} from 'react-native';
-import VMedia from '../components/VMedia';
-import HList from '../components/HList';
-import { RefreshControl } from 'react-native-gesture-handler';
+import React, {useState} from "react";
+import {RefreshControl, ScrollView} from "react-native";
+import {useInfiniteQuery, useQuery, useQueryClient} from "react-query";
+import {tvAPI} from "../api";
+import Loader from "../components/Loader";
+import HList from "../components/HList";
+import {getNextPage} from "../utils";
 
-const Tv = () => {
-	const queryClient = useQueryClient();
-	const [refreshing, setRefreshing] = useState(false);
-	const {isLoading:todayLoading, data:todayData } = useQuery(["tv", "today"], tvApi.airingToday)
-	const {isLoading:topLoading, data:topData } = useQuery(["tv", "top"], tvApi.topRated)
-	const {isLoading:trendingLoading, data:trendingData } = useQuery(["tv", "trending"], tvApi.trending)
-	const loading = todayLoading || topLoading || trendingLoading;
-	const onRefresh = async() => {
-		setRefreshing(true);
-		await queryClient.refetchQueries(["tv"]);
-		setRefreshing(false);
-	}
-	if(loading) {
-		return <Loader />
-	}
-	return (
-		<ScrollView
-			refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
-			contentContainerStyle={{paddingVertical: 30}}
-		>
-			<HList title="Trending TV" data={trendingData.results} />
-			<HList title="Airing Today" data={todayData.results} />
-			<HList title="Top Rated TV" data={topData.results} />
-		</ScrollView>
-	)
-}
+const TV = () => {
+    const queryClient = useQueryClient();
+    const [refreshing, setRefereshing] = useState(false)
+    const {isLoading: todayLoading,
+        data: todayData,
+        isFetchingNextPage: todayFetchingNextPage,
+        hasNextPage: todayHasNext,
+        fetchNextPage: todayFetchNext,
+    } = useInfiniteQuery(
+        ['tv', 'today'],
+         tvAPI.airingToday, {
+            keepPreviousData: true,
+            getNextPageParam: getNextPage,
+        }
+    );
+    const {isLoading: trendingLoading,
+        data: trendingData,
+        isFetchingNextPage: trendingFetchingNextPage,
+        hasNextPage: trendingHasNext,
+        fetchNextPage: trendingFetchNext,
+    } = useInfiniteQuery(
+        ['tv', 'trending'],
+        tvAPI.trending, {
+            keepPreviousData: true,
+            getNextPageParam: getNextPage,
+        }
+    );
+    const {isLoading: topLoading,
+        data: topData,
+        isFetchingNextPage: topFetchingNextPage,
+        hasNextPage: topHasNext,
+        fetchNextPage: topFetchNext,
+    } = useInfiniteQuery(
+        ['tv', 'top'],
+        tvAPI.topRated, {
+            keepPreviousData: true,
+            getNextPageParam: getNextPage,
+        }
+    );
+    const onRefresh = async() => {
+        setRefereshing(true)
+        await queryClient.refetchQueries(['tv']);
+        setRefereshing(false)
+    }
+    const loading = todayLoading || topLoading || trendingLoading;
 
-export default Tv;
+    if (loading) {
+        return  <Loader />;
+    }
+    return (
+        <ScrollView
+            refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
+            }
+            contentContainerStyle={{ paddingVertical: 30}}>
+            <HList
+                title="Trending TV"
+                data={trendingData.pages.map((page) => page.results).flat()}
+                hasNext={trendingHasNext}
+                fetchNext={trendingFetchNext}
+                isFetchingNextPage={trendingFetchingNextPage}
+            />
+            <HList
+                title="Airing Today"
+                data={todayData.pages.map((page) => page.results).flat()}
+                hasNext={todayHasNext}
+                fetchNext={todayFetchNext}
+                isFetchingNextPage={todayFetchingNextPage}
+            />
+            <HList
+                title="Top Rated TV"
+                data={topData.pages.map((page) => page.results).flat()}
+                hasNext={topHasNext}
+                fetchNext={topFetchNext}
+                isFetchingNextPage={topFetchingNextPage}
+            />
+        </ScrollView>
+  );
+};
+
+export default TV;
